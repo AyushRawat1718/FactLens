@@ -1,31 +1,32 @@
 from transformers import pipeline
-import os
+from src.config import HF_MODEL_ID
 
-MODEL_PATH = "./model"
+# Global cached classifier instance
+_classifier = None
+
 
 class ClaimClassifier:
-    def __init__(self, model_path=MODEL_PATH):
-        if not os.path.exists(model_path):
-            raise FileNotFoundError(f"Model folder not found at {model_path}")
-        
-        print(f"Loading model from {model_path}...")
+    def __init__(self, model_id=HF_MODEL_ID):
+
+        print(f"Loading claim classifier from Hugging Face...")
+        print(f"Model: {model_id}")
 
         self.model = pipeline(
-            "text-classification",
-            model=model_path,
-            tokenizer=model_path,
-            device=-1   # CPU, change to 0 for GPU
+            task="text-classification",
+            model=model_id,
+            tokenizer=model_id,
+            device=-1,  # CPU (use 0 for GPU)
         )
 
-        print("Model loaded successfully.")
+        print("Claim classifier loaded successfully.")
 
     def predict(self, sentence: str):
+
         result = self.model(sentence)[0]
-        
-        raw_label = result["label"]        # e.g. "LABEL_1"
+
+        raw_label = result["label"]
         score = result["score"]
-        
-        # Convert LABEL_X → X
+
         if raw_label.startswith("LABEL_"):
             label_id = int(raw_label.split("_")[1])
         else:
@@ -33,16 +34,30 @@ class ClaimClassifier:
 
         return label_id, score
 
+
 def load_claim_classifier():
-    return ClaimClassifier()
-        
+    """
+    Loads the classifier only once.
+    Subsequent calls reuse the cached instance.
+    """
+
+    global _classifier
+
+    if _classifier is None:
+        _classifier = ClaimClassifier()
+
+    return _classifier
+
 
 if __name__ == "__main__":
-    clf = ClaimClassifier()
+
+    clf = load_claim_classifier()
+
     tests = [
         "The moon landing was faked.",
         "Water boils at 100 degrees Celsius.",
         "I love this video."
     ]
-    for t in tests:
-        print(t, "=>", clf.predict(t))
+
+    for sentence in tests:
+        print(sentence, "=>", clf.predict(sentence))

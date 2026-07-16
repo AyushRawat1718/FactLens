@@ -1,6 +1,7 @@
-transformers
-torch
-spacy
+transformers>=4.48.0
+torch>=2.5.0
+
+spacy>=3.8.0
 en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
 
 youtube-transcript-api
@@ -12,11 +13,11 @@ pydantic
 
 streamlit
 
-pdfkit
-requests
+google-genai
+groq
 
-langchain
-langgraph
-tavily-python
+huggingface_hub
 
 python-dotenv
+
+pdfkit

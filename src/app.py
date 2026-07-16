@@ -1,5 +1,3 @@
-# src/app.py
-
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -15,17 +13,17 @@ from src.report_generator import save_html_report, make_safe_filename
 # ---------------------------------------------------
 app = FastAPI(
     title="YouTube Fact Checker API",
-    description="Uploads a YouTube URL or local transcript and returns a structured fact-check report.",
-    version="1.0.0"
+    description="AI-powered YouTube fact-checking service.",
+    version="2.0.0"
 )
 
 
 # ---------------------------------------------------
-# ENABLE CORS FOR STREAMLIT FRONTEND
+# ENABLE CORS
 # ---------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # allow all frontend origins
+    allow_origins=["*"],   # Restrict this in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,71 +31,113 @@ app.add_middleware(
 
 
 # ---------------------------------------------------
-# REQUEST BODY SCHEMA
+# REQUEST SCHEMA
 # ---------------------------------------------------
 class CheckRequest(BaseModel):
     url: str
-    save_report: Optional[bool] = False  # default false
+    save_report: Optional[bool] = False
 
 
 # ---------------------------------------------------
-# HEALTH CHECK ENDPOINT
+# HEALTH CHECK
 # ---------------------------------------------------
 @app.get("/health")
 def health_check():
-    return {"status": "ok", "message": "YouTube Fact Checker API is running!"}
-
-
-# ---------------------------------------------------
-# MAIN FACT CHECK ENDPOINT
-# ---------------------------------------------------
-@app.post("/check")
-def check_video(req: CheckRequest):
-    """
-    Accepts a YouTube URL OR local transcript path.
-    Runs full pipeline and optionally saves HTML report.
-    """
-
-    video_input = req.url.strip()
-    print(f"[API] Received input: {video_input}")
-
-    try:
-        report = run_pipeline(video_input)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Pipeline failed: {e}")
-
-    saved_report_path = None
-    if req.save_report:
-        try:
-            os.makedirs("reports", exist_ok=True)
-            safe_name = make_safe_filename(video_input)
-            out_path = f"reports/report_{safe_name}.html"
-            saved_report_path = save_html_report(report, out_path)
-        except Exception as e:
-            saved_report_path = f"Failed to save HTML report: {e}"
-
     return {
-        "status": "ok",
-        "report": report,
-        "saved_report": saved_report_path
+        "success": True,
+        "message": "API is running."
     }
 
 
 # ---------------------------------------------------
-# ROOT ENDPOINT
+# ROOT
 # ---------------------------------------------------
 @app.get("/")
 def root():
     return {
-        "status": "ok",
-        "usage": "POST /check with JSON: { 'url': 'VIDEO_URL', 'save_report': true }"
+        "success": True,
+        "service": "YouTube Fact Checker API",
+        "version": "2.0.0"
     }
 
 
 # ---------------------------------------------------
-# LOCAL DEVELOPMENT SERVER
+# FACT CHECK ENDPOINT
+# ---------------------------------------------------
+@app.post("/check")
+def check_video(req: CheckRequest):
+
+    video_input = req.url.strip()
+
+    print(f"[API] Processing: {video_input}")
+
+    try:
+        report = run_pipeline(video_input)
+
+    except Exception as e:
+
+        error_message = str(e)
+
+        if "AI_QUOTA_EXCEEDED" in error_message:
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "code": "AI_QUOTA_EXCEEDED",
+                    "message": (
+                        "AI processing capacity has been exhausted. "
+                        "Please try again later."
+                    )
+                }
+            )
+
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "code": "PIPELINE_ERROR",
+                "message": error_message
+            }
+        )
+
+    saved_report = None
+
+    if req.save_report:
+
+        try:
+
+            os.makedirs("reports", exist_ok=True)
+
+            safe_name = make_safe_filename(video_input)
+
+            output_path = f"reports/report_{safe_name}.html"
+
+            saved_report = save_html_report(
+                report,
+                output_path
+            )
+
+        except Exception as e:
+
+            saved_report = {
+                "success": False,
+                "message": str(e)
+            }
+
+    return {
+        "success": True,
+        "report": report,
+        "saved_report": saved_report
+    }
+
+
+# ---------------------------------------------------
+# LOCAL SERVER
 # ---------------------------------------------------
 if __name__ == "__main__":
     import uvicorn
-    # Correct module path: src.app
-    uvicorn.run("src.app:app", host="0.0.0.0", port=8000, reload=True)
+
+    uvicorn.run(
+        "src.app:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True
+    )
