@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-ink text-cream font-sans;
+}
+
+.grid-bg {
+  background-image: linear-gradient(#1e243055 1px, transparent 1px),
+    linear-gradient(90deg, #1e243055 1px, transparent 1px);
+  background-size: 42px 42px;
+  -webkit-mask-image: radial-gradient(ellipse 65% 55% at 50% 15%, black 25%, transparent 75%);
+  mask-image: radial-gradient(ellipse 65% 55% at 50% 15%, black 25%, transparent 75%);
+}
+
+.noise {
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.glow {
+  filter: blur(95px);
+}
+
+.lift {
+  transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.3, 1), border-color 0.3s, box-shadow 0.3s;
+}
+.lift:hover {
+  transform: translateY(-5px);
+  border-color: #4fd1c560;
+  box-shadow: 0 24px 48px -24px rgba(79, 209, 197, 0.35);
+}
+
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+  mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+}
+
+.fl-focus:focus-visible {
+  outline: 2px solid #4fd1c5;
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
