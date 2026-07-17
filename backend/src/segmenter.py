@@ -39,6 +39,10 @@ def extract_video_id(value: str):
     if "youtube.com/watch?v=" in value:
         return ("youtube", value.split("watch?v=")[1][:11])
 
+    # YouTube Shorts: youtube.com/shorts/<id>
+    if "youtube.com/shorts/" in value:
+        return ("youtube", value.split("shorts/")[1][:11])
+
     if "youtu.be/" in value:
         return ("youtube", value.split("youtu.be/")[1][:11])
 

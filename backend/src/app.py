@@ -6,6 +6,7 @@ import os
 
 from src.pipeline import run_pipeline
 from src.report_generator import save_html_report, make_safe_filename
+from src.config import CORS_ORIGINS, HOST, PORT
 
 
 # ---------------------------------------------------
@@ -23,7 +24,7 @@ app = FastAPI(
 # ---------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # Restrict this in production
+    allow_origins=CORS_ORIGINS,   # set via CORS_ORIGINS in .env; restrict in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -137,7 +138,7 @@ if __name__ == "__main__":
 
     uvicorn.run(
         "src.app:app",
-        host="0.0.0.0",
-        port=8000,
+        host=HOST,
+        port=PORT,
         reload=True
     )

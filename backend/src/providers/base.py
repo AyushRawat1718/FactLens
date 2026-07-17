@@ -1,20 +1,42 @@
-# src/providers/base.py
-
 from abc import ABC, abstractmethod
 
 
 class AIProvider(ABC):
     """
-    Base class for every AI provider.
-
-    Any provider (Gemini, Groq, OpenRouter, etc.)
-    must implement the verify_claims() method.
+    Base interface for every AI provider.
     """
 
     @abstractmethod
-    def verify_claims(self, claims: list[str]) -> dict:
+    def verify_batch(self, claims: list[str], evidence_bundles: list) -> dict:
         """
-        Accepts a list of claims and returns
-        a standardized response.
+        Verify an entire batch of claims in ONE request.
+
+        Parameters
+        ----------
+        claims : list[str]
+            Claims to verify, in order.
+
+        evidence_bundles : list[EvidenceBundle]
+            Evidence for each claim, same length and order as `claims`.
+
+        Returns
+        -------
+        dict
+            Standardized provider response:
+
+            On success:
+                {
+                    "success": True,
+                    "provider": "<name>",
+                    "results": [ {...one result per claim, in `claims` order...} ]
+                }
+
+            On failure:
+                {
+                    "success": False,
+                    "provider": "<name>",
+                    "disable_provider": bool,
+                    "error": {"code": "...", "message": "..."}
+                }
         """
-        pass
+        raise NotImplementedError

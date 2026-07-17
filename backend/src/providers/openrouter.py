@@ -1,6 +1,10 @@
-from groq import Groq
+from openai import OpenAI
 
-from src.config import GROQ_API_KEY, GROQ_MODEL
+from src.config import (
+    OPENROUTER_API_KEY,
+    OPENROUTER_MODEL,
+)
+
 from src.providers.base import AIProvider
 from src.providers.prompts import build_batch_fact_check_prompt
 from src.providers.utils import extract_json_array, reconcile_batch_results
@@ -20,15 +24,20 @@ DISABLE_KEYWORDS = [
 ]
 
 
-class GroqProvider(AIProvider):
+class OpenRouterProvider(AIProvider):
 
     def __init__(self):
-        self.client = Groq(api_key=GROQ_API_KEY)
-        self.model = GROQ_MODEL
+
+        self.client = OpenAI(
+            api_key=OPENROUTER_API_KEY,
+            base_url="https://openrouter.ai/api/v1",
+        )
+
+        self.model = OPENROUTER_MODEL
 
     def verify_batch(self, claims: list[str], evidence_bundles: list) -> dict:
         """
-        Verifies an entire batch of claims in a SINGLE Groq request.
+        Verifies an entire batch of claims in a SINGLE OpenRouter request.
         """
 
         prompt = build_batch_fact_check_prompt(claims, evidence_bundles)
@@ -46,20 +55,38 @@ class GroqProvider(AIProvider):
                 temperature=0.2,
             )
 
-            # Defensive: some providers can return a 200 response with no
-            # choices (e.g. upstream/model error surfaced in-band instead
-            # of as an HTTP error). Indexing response.choices[0] directly
-            # in that case raises "'NoneType' object is not subscriptable".
+            # ---------------------------------------------------------
+            # THE FIX for the "'NoneType' object is not subscriptable"
+            # bug: OpenRouter's free-tier models occasionally return a
+            # 200 response where `choices` is null/empty (e.g. when the
+            # upstream model provider they route to is overloaded or
+            # errors out). The old code did response.choices[0] directly,
+            # which threw that exact TypeError when choices was None.
+            # We now check for it explicitly and return a clean,
+            # identifiable error instead of letting it blow up.
+            # ---------------------------------------------------------
             choices = getattr(response, "choices", None)
 
             if not choices:
+
+                # OpenRouter sometimes attaches error details on the
+                # response body itself when choices is empty — surface
+                # it if present, for easier debugging in the logs.
+                upstream_error = getattr(response, "error", None)
+                detail = f" ({upstream_error})" if upstream_error else ""
+
                 return {
                     "success": False,
-                    "provider": "groq",
+                    "provider": "openrouter",
                     "disable_provider": False,
                     "error": {
                         "code": "EMPTY_RESPONSE",
-                        "message": "Groq returned a response with no choices.",
+                        "message": (
+                            "OpenRouter returned a response with no "
+                            f"choices{detail}. This usually means the "
+                            "free model was overloaded — it will be "
+                            "retried on the next batch."
+                        ),
                     },
                 }
 
@@ -69,24 +96,25 @@ class GroqProvider(AIProvider):
             if not raw:
                 return {
                     "success": False,
-                    "provider": "groq",
+                    "provider": "openrouter",
                     "disable_provider": False,
                     "error": {
                         "code": "EMPTY_RESPONSE",
-                        "message": "Groq returned an empty message.",
+                        "message": "OpenRouter returned an empty message.",
                     },
                 }
 
             data = extract_json_array(raw)
 
             if data is None:
+
                 return {
                     "success": False,
-                    "provider": "groq",
+                    "provider": "openrouter",
                     "disable_provider": False,
                     "error": {
                         "code": "INVALID_RESPONSE",
-                        "message": "Groq returned invalid JSON.",
+                        "message": "OpenRouter returned invalid JSON.",
                     },
                 }
 
@@ -94,7 +122,7 @@ class GroqProvider(AIProvider):
 
             return {
                 "success": True,
-                "provider": "groq",
+                "provider": "openrouter",
                 "results": results,
             }
 
@@ -110,7 +138,7 @@ class GroqProvider(AIProvider):
 
             return {
                 "success": False,
-                "provider": "groq",
+                "provider": "openrouter",
                 "disable_provider": disable_provider,
                 "error": {
                     "code": "REQUEST_FAILED",
