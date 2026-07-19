@@ -108,7 +108,33 @@ def extract_json_array(text: str) -> list | None:
 
     return None
 
-def reconcile_batch_results(claims: list[str], raw_results) -> list[dict]:
+def _real_sources_from_bundle(bundle) -> list[dict]:
+    """
+    Converts a retrieval.models.EvidenceBundle's real Evidence entries
+    into the {title, description, url} shape the frontend renders —
+    using the ACTUAL retrieved search results, not whatever the LLM
+    echoed back in its JSON response. Nothing previously verified the
+    model's self-reported "sources" against the evidence it was actually
+    given, so it could paraphrase titles, truncate descriptions, or (most
+    importantly) return a slightly wrong URL. This makes the real,
+    retrieved evidence the single source of truth for what gets shown.
+    """
+
+    if bundle is None:
+        return []
+
+    return [
+        {
+            "title": ev.title,
+            "description": (ev.content or "")[:280],
+            "url": ev.url,
+        }
+        for ev in (getattr(bundle, "evidence", None) or [])
+        if getattr(ev, "url", None)
+    ]
+
+
+def reconcile_batch_results(claims: list[str], raw_results, evidence_bundles=None) -> list[dict]:
     """
     Matches the model's raw batch results back to `claims`, in order.
 
@@ -124,6 +150,10 @@ def reconcile_batch_results(claims: list[str], raw_results) -> list[dict]:
          batch, but the counts line up, fall back to positional order.
       4. Any claim still unmatched gets a safe UNVERIFIABLE placeholder
          instead of crashing or silently dropping it from the report.
+
+    If `evidence_bundles` (aligned 1:1 with `claims`) is passed in, each
+    result's "sources" field is overwritten with the real evidence for
+    that claim — see _real_sources_from_bundle above.
     """
 
     reconciled: list = [None] * len(claims)
@@ -167,5 +197,10 @@ def reconcile_batch_results(claims: list[str], raw_results) -> list[dict]:
                 ),
                 "sources": [],
             }
+
+        if evidence_bundles is not None and i < len(evidence_bundles):
+            real_sources = _real_sources_from_bundle(evidence_bundles[i])
+            if real_sources:
+                reconciled[i]["sources"] = real_sources
 
     return reconciled

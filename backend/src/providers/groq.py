@@ -90,7 +90,7 @@ class GroqProvider(AIProvider):
                     },
                 }
 
-            results = reconcile_batch_results(claims, data)
+            results = reconcile_batch_results(claims, data, evidence_bundles)
 
             return {
                 "success": True,

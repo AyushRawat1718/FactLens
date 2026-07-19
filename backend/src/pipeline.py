@@ -10,6 +10,7 @@ from src.fact_checker import (
     providers_exhausted,
 )
 
+from src.providers.provider_manager import ProviderManager
 from src.config import BATCH_SIZE
 
 
@@ -31,6 +32,8 @@ def process_claims(claims, stage_label="Claims"):
         len(claims) + BATCH_SIZE - 1
     ) // BATCH_SIZE
 
+    exhausted_notice_printed = False
+
     for i in range(0, len(claims), BATCH_SIZE):
 
         batch = claims[i:i + BATCH_SIZE]
@@ -39,6 +42,37 @@ def process_claims(claims, stage_label="Claims"):
             item["sentence"]
             for item in batch
         ]
+
+        # Once every provider is disabled, verify_claims() would just
+        # return an UNVERIFIABLE placeholder for each claim anyway,
+        # without making any real request — but printing a full
+        # "Fact-checking batch N/M" line for each of the remaining
+        # batches makes it look like the pipeline is still trying (or
+        # retrying) something, when it's actually done attempting for
+        # this video. Collapse all of that into one clear line instead.
+        if providers_exhausted():
+
+            if not exhausted_notice_printed:
+                remaining = total_batches - (i // BATCH_SIZE)
+                print(
+                    f"\nSkipping remaining {remaining} {stage_label} "
+                    f"batch(es) — all AI providers are exhausted for "
+                    f"this video. Marking as UNVERIFIABLE with no "
+                    f"further provider calls."
+                )
+                exhausted_notice_printed = True
+
+            for original in batch:
+                verified.append({
+                    "sentence": original["sentence"],
+                    "model_score": original["score"],
+                    "fact_check": ProviderManager._unverifiable_result(
+                        original["sentence"],
+                        "all configured AI providers were unavailable",
+                    ),
+                })
+
+            continue
 
         print(
             f"\nFact-checking {stage_label} batch "
