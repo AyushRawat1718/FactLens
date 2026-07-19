@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Github, Sun } from "lucide-react";
 import LensMark from "./ui/Logo.jsx";
 import { PrimaryButton } from "./ui/Buttons.jsx";
+import { scrollToSection } from "../lib/scrollTo.js";
 
 function ThemeToggleStub() {
   const [note, setNote] = useState(false);
@@ -41,14 +42,14 @@ export default function Navbar() {
 
         {!isDashboard ? (
           <div className="flex items-center gap-2 sm:gap-5">
-            <a href="#how" className="hidden text-[13.5px] text-muted transition-colors hover:text-cream sm:block">
+            <a href="#how" onClick={scrollToSection("how")} className="hidden text-[13.5px] text-muted transition-colors hover:text-cream sm:block">
               How it works
             </a>
-            <a href="#trust" className="hidden text-[13.5px] text-muted transition-colors hover:text-cream sm:block">
+            <a href="#trust" onClick={scrollToSection("trust")} className="hidden text-[13.5px] text-muted transition-colors hover:text-cream sm:block">
               Trust
             </a>
             <a
-              href="https://github.com"
+              href="https://github.com/AyushRawat1718/FactLens"
               target="_blank"
               rel="noreferrer"
               className="fl-focus hidden items-center gap-1.5 text-[13.5px] text-muted sm:flex"
@@ -62,7 +63,7 @@ export default function Navbar() {
         ) : (
           <div className="flex items-center gap-3">
             <a
-              href="https://github.com"
+              href="https://github.com/AyushRawat1718/FactLens"
               target="_blank"
               rel="noreferrer"
               className="fl-focus flex items-center gap-1.5 text-[13.5px] text-muted"

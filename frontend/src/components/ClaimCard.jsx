@@ -36,14 +36,28 @@ export default function ClaimCard({ claim, delay = 0 }) {
           </div>
           {claim.sources.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
-              {claim.sources.map((s) => (
-                <span
-                  key={s.label}
-                  className="inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-1 font-mono text-[11px] text-muted"
-                >
-                  <Link2 size={10} /> {s.label}
-                </span>
-              ))}
+              {claim.sources.map((s, i) =>
+                s.url ? (
+                  <a
+                    key={s.url + i}
+                    href={s.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    title={s.description || s.label}
+                    className="fl-focus inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-1 font-mono text-[11px] text-muted transition-colors hover:border-teal/50 hover:text-teal"
+                  >
+                    <Link2 size={10} /> {s.label}
+                  </a>
+                ) : (
+                  <span
+                    key={s.label + i}
+                    title={s.description || undefined}
+                    className="inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-1 font-mono text-[11px] text-muted"
+                  >
+                    <Link2 size={10} /> {s.label}
+                  </span>
+                )
+              )}
             </div>
           )}
         </div>

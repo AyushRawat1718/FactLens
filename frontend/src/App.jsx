@@ -5,19 +5,19 @@ import Footer from "./components/Footer.jsx";
 import Landing from "./pages/Landing.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 
-// Using HashRouter so the build works on any static host (Netlify, Vercel,
-// GitHub Pages, S3, nginx) without extra rewrite/redirect configuration.
-// Swap for BrowserRouter + a redirect rule if you'd rather have clean URLs.
+// HashRouter avoids needing SPA rewrite rules on static hosts.
 
 export default function App() {
   return (
     <HashRouter>
-      <div className="min-h-screen">
+      <div className="flex min-h-screen flex-col">
         <Navbar />
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-        </Routes>
+        <main className="flex-1">
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+          </Routes>
+        </main>
         <Footer />
       </div>
     </HashRouter>

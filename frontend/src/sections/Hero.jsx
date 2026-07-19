@@ -13,7 +13,7 @@ import { T } from "../lib/tokens.js";
 function DashboardPreviewMock() {
   const chips = [
     { label: "TRUE", color: "text-teal border-teal/40", style: { top: "-6%", left: "-8%" }, delay: 0 },
-    { label: "DISPUTED", color: "text-amber border-amber/40", style: { top: "70%", left: "-10%" }, delay: 0.7 },
+    { label: "DISPUTED", color: "text-amber border-amber/40", style: { top: "70%", left: "-16%" }, delay: 0.7 },
     { label: "UNVERIFIABLE", color: "text-slate border-slate/40", style: { top: "-8%", right: "-6%" }, delay: 1.3 },
   ];
 
@@ -27,7 +27,7 @@ function DashboardPreviewMock() {
       {chips.map((c) => (
         <motion.div
           key={c.label}
-          className={`absolute z-10 rounded-full border bg-surface px-2.5 py-1 font-mono text-[10px] tracking-wide ${c.color}`}
+          className={`absolute z-30 rounded-full border bg-surface px-2.5 py-1 font-mono text-[10px] tracking-wide ${c.color}`}
           style={c.style}
           animate={{ y: [0, -10, 0] }}
           transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: c.delay }}
@@ -87,7 +87,7 @@ export default function Hero() {
       <div className="relative mx-auto grid max-w-6xl grid-cols-1 items-center gap-16 lg:grid-cols-2">
         <div>
           <Reveal>
-            <Badge icon={Sparkles}>RoBERTa · Gemini · Groq fallback</Badge>
+            <Badge icon={Sparkles}>Custom classifier · AI verification with fallback</Badge>
           </Reveal>
 
           <h1 className="mt-6 font-serif text-[46px] font-semibold leading-[1.03] tracking-tight sm:text-[64px]">
@@ -101,8 +101,9 @@ export default function Hero() {
           <Reveal delay={740}>
             <p className="mt-4 max-w-md text-[15.5px] leading-relaxed text-muted">
               FactLens detects factual claims in any YouTube video with a custom-trained
-              RoBERTa classifier, verifies them with Gemini — automatically falling back to
-              Groq — and renders an evidence-backed report you can trust.
+              classifier, verifies each one against real sources with an AI verification layer
+              that automatically falls back to a second provider if the first is
+              unavailable, and renders an evidence-backed report you can trust.
             </p>
           </Reveal>
 
@@ -110,18 +111,28 @@ export default function Hero() {
             <Link to="/dashboard">
               <PrimaryButton onClick={() => {}}>Launch FactLens</PrimaryButton>
             </Link>
-            <a href="https://github.com" target="_blank" rel="noreferrer">
+            <a href="https://github.com/AyushRawat1718/FactLens" target="_blank" rel="noreferrer">
               <GhostButton icon={Github}>View GitHub</GhostButton>
             </a>
           </Reveal>
 
-          <Reveal delay={980} className="mt-10 flex gap-8">
-            {[["76", "sentences"], ["39", "claims found"], ["84%", "reliability"]].map(([n, l]) => (
-              <div key={l}>
-                <div className="font-mono text-[21px] font-semibold">{n}</div>
-                <div className="text-[11.5px] text-muted">{l}</div>
-              </div>
-            ))}
+          <Reveal delay={920} className="mt-3 text-[12px] text-muted">
+            Supports Shorts and videos up to ~15 min, English only, for now.
+          </Reveal>
+
+          <Reveal delay={980} className="mt-10">
+            <div className="flex gap-8">
+              {[["76", "sentences"], ["39", "claims found"], ["84%", "reliability"]].map(([n, l]) => (
+                <div key={l}>
+                  <div className="font-mono text-[21px] font-semibold">{n}</div>
+                  <div className="text-[11.5px] text-muted">{l}</div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2 text-[10.5px] text-muted">
+              From the example report shown here — not an aggregate stat. See the classifier's real
+              evaluation results below.
+            </p>
           </Reveal>
         </div>
 

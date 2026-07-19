@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Youtube, ChevronRight, Search, Download, FileText, CheckCircle2, Zap } from "lucide-react";
+import { Youtube, ChevronRight, Search, FileOutput, Clock, CheckCircle2, Zap } from "lucide-react";
 import Reveal from "../components/ui/Reveal.jsx";
 import LensMark from "../components/ui/Logo.jsx";
 import RingGauge from "../components/ui/RingGauge.jsx";
@@ -8,27 +8,11 @@ import ClaimCard from "../components/ClaimCard.jsx";
 import { T } from "../lib/tokens.js";
 import { checkVideo } from "../lib/api.js";
 
-// ---------------------------------------------------------------------
-// BACKEND INTEGRATION POINT
-// `analyze()` below calls the FastAPI service via src/lib/api.js
-// (POST {VITE_API_URL}/check). See that file for the request/response
-// shape and the report -> {stats, claims} mapping.
-//
-// The backend responds once, in full — there's no live per-stage
-// progress from the API, so the pipeline UI below just animates through
-// the stages while the request is in flight, then reveals real results.
-//
-// If Gemini/Groq both fail server-side, the API returns a 503 with
-// { code: "AI_QUOTA_EXCEEDED" }; api.js converts that into an Error
-// with `.quota = true`, which is what sets setStatus("quota") below.
-//
-// Separately, the current Groq/OpenRouter backend doesn't throw that
-// 503 at all — it still returns 200 with every remaining claim marked
-// UNVERIFIABLE and report.providers_exhausted: true. api.js passes that
-// through as `providersExhausted`; below, that's treated the same as
-// the quota case if NOTHING got verified, or shown as a dismissible
-// banner if some real results exist from before the outage.
-// ---------------------------------------------------------------------
+// analyze() calls the backend via lib/api.js (POST /check). No live
+// per-stage progress from the API, so the pipeline UI just animates
+// while the request is in flight. If providersExhausted comes back true
+// with zero verified claims, we show the quota screen; if some claims
+// verified before the outage, we show a dismissible banner instead.
 
 function StatCard({ label, value, delay = 0 }) {
   return (
@@ -43,8 +27,8 @@ function ProcessingPipeline({ activeIndex }) {
   const stages = [
     "Transcript Extraction",
     "Sentence Segmentation",
-    "RoBERTa Classification",
-    "Gemini Verification",
+    "Claim Classification",
+    "AI Verification",
     "Report Generation",
   ];
   return (
@@ -95,9 +79,7 @@ function QuotaNotice({ onDismiss }) {
   );
 }
 
-// Shown instead of QuotaNotice when providers ran out PARTWAY through a
-// video — some real results exist, so we don't want to hide them behind
-// a full-screen notice. Dismissible, sits above the results.
+// Partial-outage version of QuotaNotice — some results exist, so it's a dismissible banner, not a full-screen block.
 function PartialOutageBanner({ onDismiss }) {
   return (
     <Reveal className="mb-6 flex items-start gap-3 rounded-xl border border-amber/40 bg-amber/[0.07] px-4 py-3.5">
@@ -124,10 +106,9 @@ export default function Dashboard() {
   const [stats, setStats] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [showOutageBanner, setShowOutageBanner] = useState(false);
+  const [reportNoticeVisible, setReportNoticeVisible] = useState(false);
 
-  // The backend responds once it's fully done, so we animate through the
-  // pipeline stages for visual feedback while the real request is in
-  // flight, then apply the actual result when it resolves.
+  // Backend responds in one shot — this just animates the stages while it's in flight.
   const analyze = () => {
     if (!url.trim() || status === "processing") return;
 
@@ -144,16 +125,13 @@ export default function Dashboard() {
       .then(({ stats, claims, verifiedCount, providersExhausted }) => {
         clearInterval(iv);
 
-        // Both providers were disabled and NOTHING got verified — show
-        // the full-screen notice instead of a results view where every
-        // single card repeats the same "providers unavailable" message.
+        // Total outage — nothing verified, show the full-screen notice.
         if (providersExhausted && verifiedCount === 0) {
           setStatus("quota");
           return;
         }
 
-        // Providers ran out partway through — real results exist, so
-        // show them plus a dismissible banner instead of hiding it all.
+        // Partial outage — show real results plus a dismissible banner.
         setShowOutageBanner(providersExhausted);
         setStats(stats);
         setClaims(claims);
@@ -207,6 +185,11 @@ export default function Dashboard() {
         <PrimaryButton onClick={analyze} icon={ChevronRight} className="justify-center">
           Analyze
         </PrimaryButton>
+      </Reveal>
+
+      <Reveal delay={160} className="mx-auto mt-3 max-w-xl text-center text-[12px] leading-relaxed text-muted">
+        Works with YouTube Shorts (fastest) and longer videos up to about 10–15 minutes for now —
+        anything beyond that isn't supported yet. English-language videos only at the moment.
       </Reveal>
 
       {status === "processing" && (
@@ -294,9 +277,21 @@ export default function Dashboard() {
             )}
           </div>
 
-          <div className="mt-8 flex justify-center gap-3">
-            <GhostButton icon={Download}>Download HTML</GhostButton>
-            <GhostButton icon={FileText}>Download PDF</GhostButton>
+          <div className="mt-8 flex flex-col items-center gap-2.5">
+            <GhostButton
+              icon={reportNoticeVisible ? Clock : FileOutput}
+              onClick={() => {
+                setReportNoticeVisible(true);
+                setTimeout(() => setReportNoticeVisible(false), 3200);
+              }}
+            >
+              Generate Report
+            </GhostButton>
+            {reportNoticeVisible && (
+              <Reveal className="font-mono text-[11.5px] text-muted">
+                Stay tuned — report export is coming in an updated version.
+              </Reveal>
+            )}
           </div>
         </>
       )}

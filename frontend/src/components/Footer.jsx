@@ -11,13 +11,13 @@ export default function Footer() {
           <span className="font-serif text-[14.5px] font-semibold">FactLens</span>
         </div>
         <div className="flex items-center gap-5 text-muted">
-          <a href="https://github.com" target="_blank" rel="noreferrer" className="fl-focus hover:text-cream" aria-label="GitHub">
+          <a href="https://github.com/AyushRawat1718/FactLens" target="_blank" rel="noreferrer" className="fl-focus hover:text-cream" aria-label="GitHub">
             <Github size={17} />
           </a>
-          <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="fl-focus hover:text-cream" aria-label="LinkedIn">
+          <a href="https://www.linkedin.com/in/ayush-rawat-dev" target="_blank" rel="noreferrer" className="fl-focus hover:text-cream" aria-label="LinkedIn">
             <Linkedin size={17} />
           </a>
-          <a href="mailto:hello@factlens.app" className="fl-focus hover:text-cream" aria-label="Email">
+          <a href="mailto:ayushrawat1718@gmail.com" className="fl-focus hover:text-cream" aria-label="Email">
             <Mail size={17} />
           </a>
         </div>

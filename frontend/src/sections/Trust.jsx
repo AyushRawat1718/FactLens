@@ -3,11 +3,11 @@ import { ShieldCheck, CheckCircle2 } from "lucide-react";
 import Reveal from "../components/ui/Reveal.jsx";
 
 const points = [
-  "Claims are first filtered by a custom-trained RoBERTa model.",
-  "Only likely factual claims are sent to the LLM layer.",
-  "Gemini is the primary verifier.",
-  "Groq is the automatic fallback if Gemini is unavailable.",
-  "Evidence and sources are displayed alongside every verdict.",
+  "Claims are first filtered by a custom-trained classification model.",
+  "Only likely factual claims are sent to the AI verification layer.",
+  "A primary AI provider verifies each claim against retrieved evidence.",
+  "A second provider automatically takes over if the primary is unavailable.",
+  "Sources shown alongside a verdict are the real evidence that was retrieved — not a summary written by the AI.",
 ];
 
 export default function Trust() {

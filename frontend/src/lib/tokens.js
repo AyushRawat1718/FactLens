@@ -1,8 +1,4 @@
-// Design tokens — single source of truth for colors used in SVG
-// strokes/fills and dynamic per-verdict styling that can't be expressed
-// as static Tailwind classes. For backgrounds/text/borders elsewhere,
-// prefer the Tailwind classes in tailwind.config.js (bg-teal, text-muted,
-// border-line, etc) — keeps styling greppable and purge-safe.
+// Colors for SVG/dynamic styling. Elsewhere, prefer Tailwind classes (bg-teal, text-muted, etc).
 export const T = {
   ink: "#0B0E14",
   surface: "#12161F",

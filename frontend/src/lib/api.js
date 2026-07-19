@@ -1,8 +1,5 @@
-// ---------------------------------------------------------------------
-// BACKEND INTEGRATION
-// Talks to the FastAPI service in /backend (see backend/src/app.py).
-// Base URL comes from VITE_API_URL (see .env.example).
-// ---------------------------------------------------------------------
+// Talks to the FastAPI backend (see backend/src/app.py).
+// Base URL comes from VITE_API_URL — see .env.example.
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -30,7 +27,13 @@ function toClaimCard(item, index) {
     text: fc.claim || item.sentence,
     reasoning: fc.reasoning || fc.message || "No explanation returned for this claim.",
     sources: Array.isArray(fc.sources)
-      ? fc.sources.map((s) => ({ label: s.title || s.description || s.url || "Source" }))
+      ? fc.sources
+          .filter((s) => s && (s.title || s.url))
+          .map((s) => ({
+            label: s.title || s.description || "Source",
+            url: s.url || null,
+            description: s.description || null,
+          }))
       : [],
   };
 }
@@ -64,14 +67,8 @@ export function transformReport(report) {
     stats,
     claims,
     verifiedCount,
-    // True once every configured AI provider (Groq, OpenRouter, ...) was
-    // disabled server-side for this video — see providers_exhausted() in
-    // the backend's pipeline.py. Distinct from verifiedCount === 0 on its
-    // own, which could also just mean the video had no claims at all.
-    // Dashboard.jsx uses this to pick between the full-screen "AI
-    // Capacity Reached" notice (nothing at all got verified) and a
-    // smaller dismissible banner (it happened partway through, so real
-    // results still exist alongside it).
+    // True once every AI provider was disabled server-side for this video.
+    // Dashboard.jsx uses it to pick full-screen notice vs. dismissible banner.
     providersExhausted: report.providers_exhausted === true,
   };
 }

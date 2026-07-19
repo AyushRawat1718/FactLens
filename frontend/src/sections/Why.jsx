@@ -3,10 +3,10 @@ import { Brain, Sparkles, Zap, FileCheck2, Server, Layers } from "lucide-react";
 import Reveal from "../components/ui/Reveal.jsx";
 
 const items = [
-  { Icon: Brain, title: "Custom NLP Classification", body: "A RoBERTa model fine-tuned to isolate factual claims from opinion and filler." },
-  { Icon: Sparkles, title: "Gemini Verification", body: "Each claim is checked against sourced, current information via Gemini." },
-  { Icon: Zap, title: "Automatic Groq Fallback", body: "If Gemini is unavailable, Groq steps in seamlessly — no interruption." },
-  { Icon: FileCheck2, title: "Evidence-backed Reports", body: "Every verdict ships with reasoning and linked sources, not just a label." },
+  { Icon: Brain, title: "Custom Claim Classification", body: "A model fine-tuned specifically to isolate factual claims from opinion and filler." },
+  { Icon: Sparkles, title: "AI-Powered Verification", body: "Each claim is checked against sourced, current information using AI verification." },
+  { Icon: Zap, title: "Automatic Fallback", body: "If the primary verification provider is unavailable, a second one steps in seamlessly — no interruption." },
+  { Icon: FileCheck2, title: "Evidence-backed Reports", body: "Every verdict ships with reasoning and real linked sources, not just a label." },
   { Icon: Server, title: "FastAPI Backend", body: "A lean, typed API layer handles transcription, classification, and verification." },
   { Icon: Layers, title: "Interactive Dashboard", body: "Filter, search, and export results in a focused, distraction-free interface." },
 ];
