@@ -27,3 +27,5 @@ pdfkit
 scikit-learn
 
 tavily-python
+
+numpy==1.26.4
