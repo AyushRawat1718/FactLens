@@ -1,7 +1,11 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
 transformers>=4.48.0
-torch>=2.5.0
+torch==2.5.1+cpu
 
 openai>=1.0.0
+groq
+tavily-python
 
 spacy==3.7.5
 en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
@@ -13,11 +17,6 @@ fastapi
 uvicorn[standard]
 pydantic
 
-streamlit
-
-google-genai
-groq
-
 huggingface_hub
 
 python-dotenv
@@ -25,7 +24,5 @@ python-dotenv
 pdfkit
 
 scikit-learn
-
-tavily-python
 
 numpy==1.26.4
