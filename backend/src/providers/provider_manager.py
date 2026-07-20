@@ -38,11 +38,7 @@ class ProviderManager:
         """
         return not self.available_providers
 
-    # -----------------------------------------------------------
-    # Evidence retrieval — one Tavily search per claim, but all
-    # searches in the batch run concurrently instead of one after
-    # another, since they're independent network calls.
-    # -----------------------------------------------------------
+
     def _gather_evidence(self, claims: list[str]) -> list[EvidenceBundle]:
 
         evidence_bundles: list = [None] * len(claims)
@@ -69,12 +65,7 @@ class ProviderManager:
 
         return evidence_bundles
 
-    # -----------------------------------------------------------
-    # Verifies an ENTIRE batch of claims with a single LLM request
-    # per provider attempt (real batching — this used to make one
-    # LLM call PER CLAIM, so a batch of 5 meant 5 provider calls;
-    # now it's exactly 1 call per provider per batch).
-    # -----------------------------------------------------------
+    
     def verify_claims(self, claims: list[str]) -> dict:
 
         if not claims:
@@ -101,10 +92,7 @@ class ProviderManager:
 
             result = None
 
-            # One retry on a transient (non-disabling) failure — e.g. the
-            # model returned malformed JSON once. Quota/auth failures are
-            # NOT retried here; those set disable_provider=True and are
-            # handled below by moving on to the next provider entirely.
+            
             for attempt in range(2):
 
                 suffix = " (retry)" if attempt == 1 else ""
@@ -119,13 +107,7 @@ class ProviderManager:
                 if result["success"]:
                     break
 
-                # Always surface WHY this attempt failed — this used to
-                # only print when disable_provider was False, which
-                # silently swallowed the reason in exactly the case you
-                # most need to see it (a provider getting disabled for
-                # the rest of the video). That's why the old logs jumped
-                # straight from "Using Provider: X" to "X is unavailable"
-                # with no explanation in between.
+                
                 print(f"{name} failed for this batch.")
                 print(f"Reason: {result['error']['message']}")
 
@@ -136,9 +118,6 @@ class ProviderManager:
 
                 results = result["results"]
 
-                # Tag each claim's result with which provider actually
-                # produced it — small, cheap addition that makes reports
-                # and logs clearer without changing the report's shape.
                 for r in results:
                     if isinstance(r, dict):
                         r.setdefault("provider", result.get("provider", name))
@@ -166,13 +145,8 @@ class ProviderManager:
 
                 continue
 
-            # Provider is healthy but this batch's request failed twice —
-            # stop retrying it now (avoid hammering it) and let the NEXT
-            # batch try it again fresh. This batch is marked UNVERIFIABLE.
             break
 
-        # Either every provider was disabled, or the last healthy provider
-        # gave up on this batch — either way, nothing verified this batch.
         self._log_exhausted_once()
 
         return {
@@ -187,11 +161,6 @@ class ProviderManager:
         }
 
     def _log_exhausted_once(self):
-        """
-        Prints ONE clear message when there are no providers left to try,
-        instead of the ambiguous silent/repeated output this used to
-        produce once every provider had failed.
-        """
 
         if not self.available_providers and not self._exhausted_logged:
 

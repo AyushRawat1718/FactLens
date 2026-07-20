@@ -46,10 +46,6 @@ class GroqProvider(AIProvider):
                 temperature=0.2,
             )
 
-            # Defensive: some providers can return a 200 response with no
-            # choices (e.g. upstream/model error surfaced in-band instead
-            # of as an HTTP error). Indexing response.choices[0] directly
-            # in that case raises "'NoneType' object is not subscriptable".
             choices = getattr(response, "choices", None)
 
             if not choices:

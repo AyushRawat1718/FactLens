@@ -15,16 +15,6 @@ from src.config import BATCH_SIZE
 
 
 def process_claims(claims, stage_label="Claims"):
-    """
-    Processes claims in batches using the AI providers.
-    Returns the verified claim list while preserving the original report format.
-
-    `stage_label` is printed with each batch (e.g. "Factual", "Disputed").
-    process_claims() is called once per claim type, so each call has its
-    own independent 1..N batch counter — without a label, two calls in a
-    row (e.g. "batch 1/7" then "batch 1/5") look like the counter reset
-    or a bug, when it's actually just the next stage starting.
-    """
 
     verified = []
 
@@ -43,13 +33,7 @@ def process_claims(claims, stage_label="Claims"):
             for item in batch
         ]
 
-        # Once every provider is disabled, verify_claims() would just
-        # return an UNVERIFIABLE placeholder for each claim anyway,
-        # without making any real request — but printing a full
-        # "Fact-checking batch N/M" line for each of the remaining
-        # batches makes it look like the pipeline is still trying (or
-        # retrying) something, when it's actually done attempting for
-        # this video. Collapse all of that into one clear line instead.
+        
         if providers_exhausted():
 
             if not exhausted_notice_printed:
@@ -82,13 +66,7 @@ def process_claims(claims, stage_label="Claims"):
 
         result = verify_claims(batch_sentences)
 
-        # ProviderManager now always returns exactly one well-formed
-        # result per claim in `results` — whether the batch succeeded,
-        # partially succeeded, or every provider failed (in which case
-        # each entry is a proper UNVERIFIABLE placeholder, not a generic
-        # error blob). So we can always zip against it directly instead
-        # of branching on `result["success"]` and falling back to
-        # attaching the raw manager response as fact_check.
+        
         responses = result.get("results") or []
 
         for original, llm_result in zip(batch, responses):
@@ -99,8 +77,7 @@ def process_claims(claims, stage_label="Claims"):
                 "fact_check": llm_result
             })
 
-        # Extremely defensive fallback: only hit if a provider response
-        # was somehow missing `results` entirely (shouldn't happen).
+        
         if len(responses) < len(batch):
 
             for original in batch[len(responses):]:
@@ -189,12 +166,7 @@ def run_pipeline(video_id: str):
 
         "disputed_claims_verified": disputed_checked,
 
-        # True once every configured AI provider has been disabled for
-        # this video (see ProviderManager.all_exhausted / reset each new
-        # video). Lets the frontend distinguish "genuinely nothing could
-        # be verified because both providers are down" from "these
-        # specific claims happened to come back UNVERIFIABLE" — the two
-        # look identical per-claim otherwise.
+        
         "providers_exhausted": providers_exhausted(),
 
     }

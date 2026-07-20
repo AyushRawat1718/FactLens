@@ -55,23 +55,10 @@ class OpenRouterProvider(AIProvider):
                 temperature=0.2,
             )
 
-            # ---------------------------------------------------------
-            # THE FIX for the "'NoneType' object is not subscriptable"
-            # bug: OpenRouter's free-tier models occasionally return a
-            # 200 response where `choices` is null/empty (e.g. when the
-            # upstream model provider they route to is overloaded or
-            # errors out). The old code did response.choices[0] directly,
-            # which threw that exact TypeError when choices was None.
-            # We now check for it explicitly and return a clean,
-            # identifiable error instead of letting it blow up.
-            # ---------------------------------------------------------
             choices = getattr(response, "choices", None)
 
             if not choices:
 
-                # OpenRouter sometimes attaches error details on the
-                # response body itself when choices is empty — surface
-                # it if present, for easier debugging in the logs.
                 upstream_error = getattr(response, "error", None)
                 detail = f" ({upstream_error})" if upstream_error else ""
 

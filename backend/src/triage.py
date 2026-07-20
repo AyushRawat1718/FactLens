@@ -1,5 +1,3 @@
-# triage.py
-
 def classify_sentences(sentences, classifier):
     """
     Classifies sentences using string labels the classifier returns:

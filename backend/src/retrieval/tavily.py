@@ -1,5 +1,3 @@
-# src/retrieval/tavily.py
-
 from tavily import TavilyClient
 
 from src.config import (
