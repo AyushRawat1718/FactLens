@@ -25,3 +25,5 @@ python-dotenv
 pdfkit
 
 scikit-learn
+
+tavily-python
