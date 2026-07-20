@@ -1,47 +1,79 @@
 from fastapi import FastAPI, HTTPException
+
+print("✅ [1] fastapi imported")
+
 from fastapi.middleware.cors import CORSMiddleware
+print("✅ [2] CORSMiddleware imported")
+
 from pydantic import BaseModel
 from typing import Optional
 import os
 
+print("✅ [3] Standard libraries imported")
+
 from src.pipeline import run_pipeline
-from src.report_generator import save_html_report, make_safe_filename
-from src.config import CORS_ORIGINS, HOST, PORT
+print("✅ [4] pipeline imported")
+
+from src.report_generator import (
+    save_html_report,
+    make_safe_filename
+)
+print("✅ [5] report_generator imported")
+
+from src.config import (
+    CORS_ORIGINS,
+    HOST,
+    PORT,
+)
+print("✅ [6] config imported")
 
 
 # ---------------------------------------------------
 # FASTAPI INITIALIZATION
 # ---------------------------------------------------
+
+print("✅ [7] Creating FastAPI app")
+
 app = FastAPI(
     title="YouTube Fact Checker API",
     description="AI-powered YouTube fact-checking service.",
     version="2.0.0"
 )
 
+print("✅ [8] FastAPI app created")
+
 
 # ---------------------------------------------------
 # ENABLE CORS
 # ---------------------------------------------------
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=CORS_ORIGINS,   # set via CORS_ORIGINS in .env; restrict in production
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+print("✅ [9] CORS configured")
+
 
 # ---------------------------------------------------
 # REQUEST SCHEMA
 # ---------------------------------------------------
+
 class CheckRequest(BaseModel):
     url: str
     save_report: Optional[bool] = False
 
 
+print("✅ [10] Request schema created")
+
+
 # ---------------------------------------------------
 # HEALTH CHECK
 # ---------------------------------------------------
+
 @app.get("/health")
 def health_check():
     return {
@@ -53,6 +85,7 @@ def health_check():
 # ---------------------------------------------------
 # ROOT
 # ---------------------------------------------------
+
 @app.get("/")
 def root():
     return {
@@ -65,6 +98,7 @@ def root():
 # ---------------------------------------------------
 # FACT CHECK ENDPOINT
 # ---------------------------------------------------
+
 @app.post("/check")
 def check_video(req: CheckRequest):
 
@@ -130,10 +164,18 @@ def check_video(req: CheckRequest):
     }
 
 
+print("✅ [11] Routes registered")
+print("✅ [12] app.py finished loading")
+
+
 # ---------------------------------------------------
 # LOCAL SERVER
 # ---------------------------------------------------
+
 if __name__ == "__main__":
+
+    print("✅ [13] Starting uvicorn")
+
     import uvicorn
 
     uvicorn.run(
