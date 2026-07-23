@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Github, Sparkles, Link2 } from "lucide-react";
+import { Github, Sparkles, Link2, Play } from "lucide-react";
 import Reveal from "../components/ui/Reveal.jsx";
 import CharReveal from "../components/ui/CharReveal.jsx";
 import LensMark from "../components/ui/Logo.jsx";
@@ -9,6 +9,7 @@ import RingGauge from "../components/ui/RingGauge.jsx";
 import { Badge, PrimaryButton, GhostButton } from "../components/ui/Buttons.jsx";
 import { VerdictBadge } from "../components/ClaimCard.jsx";
 import { T } from "../lib/tokens.js";
+import { scrollToSection } from "../lib/scrollTo.js";
 
 function DashboardPreviewMock() {
   const chips = [
@@ -108,16 +109,16 @@ export default function Hero() {
           </Reveal>
 
           <Reveal delay={860} className="mt-8 flex flex-wrap items-center gap-3">
-            <Link to="/dashboard">
-              <PrimaryButton onClick={() => {}}>Launch FactLens</PrimaryButton>
-            </Link>
+            <a href="#demo" onClick={scrollToSection("demo")}>
+              <PrimaryButton onClick={() => {}} icon={Play}>Watch Demo</PrimaryButton>
+            </a>
             <a href="https://github.com/AyushRawat1718/FactLens" target="_blank" rel="noreferrer">
               <GhostButton icon={Github}>View GitHub</GhostButton>
             </a>
           </Reveal>
 
           <Reveal delay={920} className="mt-3 text-[12px] text-muted">
-            Supports Shorts and videos up to ~15 min, English only, for now.
+            Live demo currently offline due to hosting constraints — see the video walkthrough below.
           </Reveal>
 
           <Reveal delay={980} className="mt-10">

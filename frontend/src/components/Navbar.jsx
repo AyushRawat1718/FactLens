@@ -56,9 +56,12 @@ export default function Navbar() {
             >
               <Github size={15} /> GitHub
             </a>
-            <Link to="/dashboard">
-              <PrimaryButton onClick={() => {}}>Launch FactLens</PrimaryButton>
+            <Link to="/dashboard" className="hidden text-[13.5px] text-muted transition-colors hover:text-cream sm:block">
+              Dashboard
             </Link>
+            <a href="#demo" onClick={scrollToSection("demo")}>
+              <PrimaryButton onClick={() => {}}>Watch Demo</PrimaryButton>
+            </a>
           </div>
         ) : (
           <div className="flex items-center gap-3">

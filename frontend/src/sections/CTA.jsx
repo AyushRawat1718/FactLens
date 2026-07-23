@@ -1,8 +1,9 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Play } from "lucide-react";
 import Reveal from "../components/ui/Reveal.jsx";
 import LensMark from "../components/ui/Logo.jsx";
 import { PrimaryButton } from "../components/ui/Buttons.jsx";
+import { scrollToSection } from "../lib/scrollTo.js";
 
 export default function CTA() {
   return (
@@ -12,12 +13,12 @@ export default function CTA() {
         <div className="relative">
           <LensMark size={36} spin />
           <h2 className="mt-4 font-serif text-[28px] font-semibold sm:text-[34px]">
-            Ready to verify your next video?
+            Ready to see it verify a video?
           </h2>
           <div className="mt-7 flex justify-center">
-            <Link to="/dashboard">
-              <PrimaryButton onClick={() => {}}>Launch FactLens</PrimaryButton>
-            </Link>
+            <a href="#demo" onClick={scrollToSection("demo")}>
+              <PrimaryButton onClick={() => {}} icon={Play}>Watch Demo</PrimaryButton>
+            </a>
           </div>
         </div>
       </Reveal>

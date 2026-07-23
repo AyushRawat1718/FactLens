@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
-import { Youtube, ChevronRight, Search, FileOutput, Clock, CheckCircle2, Zap } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Youtube, ChevronRight, Search, FileOutput, Clock, CheckCircle2, Zap, ServerOff } from "lucide-react";
 import Reveal from "../components/ui/Reveal.jsx";
 import LensMark from "../components/ui/Logo.jsx";
 import RingGauge from "../components/ui/RingGauge.jsx";
@@ -7,6 +8,12 @@ import { PrimaryButton, GhostButton } from "../components/ui/Buttons.jsx";
 import ClaimCard from "../components/ClaimCard.jsx";
 import { T } from "../lib/tokens.js";
 import { checkVideo } from "../lib/api.js";
+import { scrollToSection } from "../lib/scrollTo.js";
+
+// Set VITE_LIVE_DEMO=true once the backend has a stable host. Until then
+// this stays false so the page is honest about being frontend-only
+// instead of letting people hit a backend that isn't running.
+const LIVE_DEMO_ENABLED = import.meta.env.VITE_LIVE_DEMO === "true";
 
 // analyze() calls the backend via lib/api.js (POST /check). No live
 // per-stage progress from the API, so the pipeline UI just animates
@@ -57,6 +64,33 @@ function ProcessingPipeline({ activeIndex }) {
         );
       })}
     </div>
+  );
+}
+
+function OfflineNotice() {
+  return (
+    <Reveal className="mx-auto mt-8 max-w-xl rounded-2xl border border-line bg-surface px-6 py-8 text-center">
+      <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-ink">
+        <ServerOff size={18} className="text-muted" />
+      </div>
+      <h3 className="mt-4 font-serif text-[17px] font-semibold">Live demo temporarily unavailable</h3>
+      <p className="mx-auto mt-2 max-w-sm text-[13px] leading-relaxed text-muted">
+        The verification backend runs a fine-tuned model plus an NLP pipeline, which needs more
+        memory than free-tier hosting reliably provides — so it isn't consistently live right now.
+        In the meantime, watch a full run on a real video instead.
+      </p>
+      <Link
+        to="/"
+        onClick={(e) => {
+          e.preventDefault();
+          window.location.hash = "/";
+          setTimeout(() => document.getElementById("demo")?.scrollIntoView({ behavior: "smooth" }), 150);
+        }}
+        className="fl-focus mt-5 inline-flex items-center gap-1.5 font-mono text-[12px] text-teal"
+      >
+        Watch the demo video
+      </Link>
+    </Reveal>
   );
 }
 
@@ -173,26 +207,33 @@ export default function Dashboard() {
       </Reveal>
 
       <Reveal delay={100} className="mx-auto mt-8 flex max-w-xl flex-col gap-3 sm:flex-row">
-        <div className="flex flex-1 items-center gap-2.5 rounded-xl border border-line bg-surface px-4 py-3.5">
+        <div className="flex flex-1 items-center gap-2.5 rounded-xl border border-line bg-surface px-4 py-3.5 opacity-60">
           <Youtube size={17} className="shrink-0 text-teal" />
           <input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="Paste YouTube URL"
-            className="fl-focus w-full bg-transparent font-mono text-[13.5px] outline-none"
+            placeholder={LIVE_DEMO_ENABLED ? "Paste YouTube URL" : "Live demo unavailable — see below"}
+            disabled={!LIVE_DEMO_ENABLED}
+            className="fl-focus w-full cursor-not-allowed bg-transparent font-mono text-[13.5px] outline-none"
           />
         </div>
-        <PrimaryButton onClick={analyze} icon={ChevronRight} className="justify-center">
+        <PrimaryButton
+          onClick={LIVE_DEMO_ENABLED ? analyze : () => {}}
+          icon={ChevronRight}
+          className={`justify-center ${LIVE_DEMO_ENABLED ? "" : "cursor-not-allowed opacity-50"}`}
+        >
           Analyze
         </PrimaryButton>
       </Reveal>
+
+      {!LIVE_DEMO_ENABLED && <OfflineNotice />}
 
       <Reveal delay={160} className="mx-auto mt-3 max-w-xl text-center text-[12px] leading-relaxed text-muted">
         Works with YouTube Shorts (fastest) and longer videos up to about 10–15 minutes for now —
         anything beyond that isn't supported yet. English-language videos only at the moment.
       </Reveal>
 
-      {status === "processing" && (
+      {LIVE_DEMO_ENABLED && status === "processing" && (
         <div className="mx-auto mt-10 max-w-md">
           <ProcessingPipeline activeIndex={activeStage} />
         </div>
