@@ -1,243 +1,323 @@
-# 🧠 YouTube Fact Checker (AI-Powered)
+<h1 align="center">FactLens</h1>
 
-An end-to-end **AI Fact-Checking System** that:
+<p align="center">
+  <strong>AI-Powered YouTube Fact Checker</strong>
+</p>
 
-- Downloads & extracts YouTube transcripts
-- Splits the transcript into sentences (spaCy)
-- Classifies each sentence using a **custom RoBERTa claim-classifier**
-- Fact-checks all claims using **LLaMA 3 (via Ollama)**
-- Generates a **detailed HTML / PDF report**
-- Provides a **FastAPI backend** + **Streamlit UI**
+<p align="center">
+  An end-to-end AI pipeline that extracts factual claims from YouTube videos, retrieves supporting evidence, and verifies them using Large Language Models.
+</p>
 
-👉 Ideal for research, misinformation analysis, YouTube content analysis, and academic demos.
+<p align="center">
+  🌐 <a href="https://fact-lens-indol.vercel.app/">Live Website</a> •
+  🤗 <a href="https://huggingface.co/ayushrawat-1718/youtube-fact-checker-roberta">Hugging Face Model</a>
+</p>
 
 ---
 
-## 🚀 Features
+FactLens is an AI-powered fact verification system that analyzes YouTube videos, extracts factual claims from their transcripts, retrieves supporting evidence from the web, and verifies each claim using Large Language Models.
 
-### ✅ 1. Transcript Extraction
+Unlike traditional video summarization tools, FactLens identifies factual claims, retrieves supporting evidence, and generates explainable, source-backed verification reports with verdicts, confidence scores, and reasoning.
 
-- Supports **YouTube URLs**, **YouTube IDs**, and **local transcript files (`.json3`)**
-- Uses `yt-dlp` for auto-subtitle extraction
+---
 
-### ✅ 2. Sentence Segmentation
+## Why FactLens?
 
-- Uses **spaCy** (`en_core_web_sm`) to split transcript into clean sentences
+Millions of factual claims are shared through online videos every day, yet verifying them often requires manually searching multiple sources.
 
-### ✅ 3. Claim Classification
+FactLens simplifies this process by combining Natural Language Processing, Information Retrieval, and Large Language Models into a complete AI pipeline capable of automatically verifying factual claims from YouTube videos.
 
-Uses a **fine-tuned RoBERTa model** to classify sentences into:
+The project focuses on:
 
-- `FACTUAL_CLAIM`
-- `DISPUTED_CLAIM`
-- `NOT_A_CLAIM`
+- Detecting meaningful factual claims instead of processing every sentence.
+- Retrieving supporting evidence before verification.
+- Producing explainable AI-generated verdicts.
+- Providing real evidence sources for every verified claim.
 
-### ✅ 4. LLM Fact Verification
+---
 
-For each claim, the system checks truthfulness using:
+## Features
 
-- **LLaMA 3.1 8B via Ollama**
+- 🎥 YouTube video transcript extraction
+- ✂️ Sentence segmentation using spaCy
+- 🧠 AI-powered factual claim detection
+- 🔍 Evidence retrieval from trusted web sources
+- 🤖 LLM-based fact verification
+- 📊 Confidence scoring
+- 📄 Structured verification reports
+- 🔄 Automatic LLM provider failover
+- 📱 Responsive React frontend
+- 🎬 Interactive product walkthrough
 
-Provides structured JSON:
+---
 
-```json
-{
-  "verdict": "TRUE / FALSE / PARTIALLY TRUE / UNVERIFIABLE",
-  "explanation": "Short reasoning",
-  "evidence": []
-}
+## System Architecture
+
+```text
+YouTube URL
+      │
+      ▼
+Transcript Extraction (yt-dlp)
+      │
+      ▼
+Sentence Segmentation (spaCy)
+      │
+      ▼
+RoBERTa Claim Classifier
+      │
+      ▼
+Evidence Retrieval (Tavily)
+      │
+      ▼
+LLM Verification
+(Groq → OpenRouter Failover)
+      │
+      ▼
+Verdict + Confidence + Evidence
 ```
 
-### ✅ 5. Output Report
+---
 
-Generates:
+## Tech Stack
 
-- HTML Report
-- (Optional) PDF Report via wkhtmltopdf
+| Frontend | Backend |
+|-----------|----------|
+| React | FastAPI |
+| Vite | Python |
+| Tailwind CSS | Hugging Face Transformers |
+| Framer Motion | RoBERTa |
+| React Router | spaCy |
+| | yt-dlp |
+| | Tavily Search API |
+| | Groq |
+| | OpenRouter |
+| | scikit-learn |
 
-✅ 6. UI + API
+---
 
-- FastAPI backend for pipeline execution
+## Model
 
-- Streamlit UI for simple user-friendly interface
+FactLens uses a **fine-tuned RoBERTa model** to classify transcript sentences before verification.
 
-## 📂 Project Structure
+Instead of sending every transcript sentence to an LLM, the classifier filters out:
 
-```
-youtube-fact-checker/
-│
-├── model/ # NOT included in repo (download separately)
-│
-├── reports/ # (auto-created) saved HTML / PDF results
-│
-├── src/
-│ ├── app.py # FastAPI backend
-│ ├── streamlit_app.py # Streamlit UI
-│ ├── pipeline.py # Main logic orchestrator
-│ ├── model_loader.py # Loads RoBERTa classifier
-│ ├── fact_checker.py # Calls LLaMA (Ollama)
-│ ├── segmenter.py # Transcript extraction + spaCy split
-│ ├── triage.py # Claim classification
-│ ├── report_generator.py
-│ └── evaluate_classifier.py # test robustness of classifier
-│
-├── yt_captions/ # Auto-downloaded captions
-│
-├── requirements.txt
-├── .gitignore
-└── README.md
-```
+- Opinions
+- Greetings
+- Conversational filler
+- Personal statements
+- Non-verifiable content
 
-## 📥 Model Download (IMPORTANT)
+Only factual claims continue through the verification pipeline, reducing unnecessary LLM requests while improving efficiency and overall accuracy.
 
-The trained RoBERTa model is too large for GitHub.
+---
 
-📌 Download the model folder from Google Drive:
-👉 [Link](https://drive.google.com/file/d/1tTpVDudmCzzR7kyBYxouhDYCb1_6xu8x/view?usp=sharing)
+## Model Weights
 
-After downloading:
+The fine-tuned RoBERTa claim classification model is available on Hugging Face.
 
-```
-youtube-fact-checker/
-│
-└── model/
-      ├── config.json
-      ├── merges.txt
-      ├── model.safetensors
-      ├── special_tokens_map.json
-      ├── tokenizer.json
-      ├── tokenizer_config.json
-      ├── training_args.bin
-      ├── vocab.json
-```
+🤗 **Repository**
 
-## ⚙️ Installation (No venv required)
+https://huggingface.co/ayushrawat-1718/youtube-fact-checker-roberta
 
-Anyone cloning the repo can run this project by following these steps:
+The repository includes:
 
-### 1️⃣ Install Python 3.10+
+- Fine-tuned model weights
+- Tokenizer
+- Model configuration
+- Usage examples
 
-Download from: https://www.python.org/downloads/
+---
 
-### 2️⃣ Install Requirements
+## Verification Pipeline
 
-Open terminal inside project folder:
+Each detected factual claim passes through the following stages:
+
+1. Query Generation
+2. Evidence Retrieval
+3. Evidence Ranking
+4. LLM Verification
+5. Verdict Generation
+
+Each verified claim contains:
+
+- ✅ Verdict
+- 📈 Confidence Score
+- 📝 AI-generated Explanation
+- 🔗 Supporting Evidence
+- 🌐 Source References
+
+---
+
+## Model Evaluation
+
+The RoBERTa classifier is evaluated on a manually labeled benchmark dataset using **scikit-learn**.
+
+Evaluation metrics include:
+
+- Accuracy
+- Precision
+- Recall
+- F1 Score
+- Confusion Matrix
+
+Run the evaluation using:
 
 ```bash
+cd backend
+python -m src.evaluate_classifier
+```
+
+The generated report is stored at:
+
+```text
+backend/reports/model_evaluation.json
+```
+
+---
+
+## Running Locally
+
+### Backend
+
+```bash
+cd backend
+
 pip install -r requirements.txt
+
+cp .env.example .env
 ```
 
-### 3️⃣ Install Ollama
+Configure:
 
-Download & install:
-👉 https://ollama.com/download
-
-Then pull the model:
-
-```bash
-ollama pull llama3.1:8b
+```env
+GROQ_API_KEY=
+OPENROUTER_API_KEY=
+TAVILY_API_KEY=
 ```
 
-### 4️⃣ (Optional) Install PDF Export Support
-
-Install wkhtmltopdf (required):
-👉 https://wkhtmltopdf.org/downloads.html
-
-Run in terminal inside project folder
-
-```bash
-pip install pdfkit
-```
-
-## ▶️ Run the Project
-
-### Start the FastAPI Backend
+Run:
 
 ```bash
 uvicorn src.app:app --reload
 ```
 
-### Start Streamlit UI
+Backend:
 
-(Run in another terminal)
+```text
+http://localhost:8000
+```
+
+---
+
+### Frontend
 
 ```bash
-streamlit run src/streamlit_app.py
+cd frontend
+
+npm install
+
+cp .env.example .env
 ```
 
-## 🎯 Usage
+Configure:
 
-Paste a YouTube URL in Streamlit:
+```env
+VITE_API_URL=http://localhost:8000
+```
+
+Run:
 
 ```bash
-https://www.youtube.com/watch?v=XXXXXXX
+npm run dev
 ```
 
-## 🧾 SAMPLE OUTPUT
+Frontend:
 
-### A sample result looks like:
-
-```
-Total sentences: 98
-Factual claims: 12
-Disputed claims: 4
-Ignored: 82
+```text
+http://localhost:5173
 ```
 
-### Example factual claim:
+---
 
+## Deployment
+
+### Frontend
+
+The frontend is deployed on **Vercel** and showcases:
+
+- Project overview
+- System architecture
+- Classifier performance
+- Technology stack
+- Product walkthrough
+
+🌐 https://fact-lens-indol.vercel.app/
+
+### Backend
+
+The backend is fully implemented and can be run locally using the setup instructions above.
+
+Since the complete verification pipeline relies on multiple external AI providers, custom NLP models, and third-party APIs, it is not continuously hosted under free-tier infrastructure. The live website therefore includes a recorded product walkthrough demonstrating the complete verification workflow.
+
+---
+
+## Current Limitations
+
+- English-language videos only
+- Optimized for videos up to approximately 10–15 minutes
+- Backend is intended for local execution
+- Verification quality depends on retrieved evidence
+- Processing time varies depending on transcript length and web search latency
+
+---
+
+## Future Improvements
+
+- 🌍 Multi-language support
+- 📄 PDF & HTML report export
+- 📦 Docker deployment
+- 📊 Batch video processing
+- ⚡ Cached verification results
+- 🔍 Additional evidence providers
+- 👤 User authentication
+- 📁 Saved verification history
+
+---
+
+## Project Structure
+
+```text
+FactLens/
+├── backend/      FastAPI backend & AI verification pipeline
+├── frontend/     React + Vite portfolio website
+└── README.md
 ```
-Sentence: "Water boils at 100°C at sea level."
-Model Score: 0.97
-Verdict: TRUE
-Explanation: Scientific fact confirmed.
-Evidence:
-- Source: Wikipedia
-  Description: Water boiling point at 1 atm is 100°C.
-```
 
-### Example disputed claim:
-
-```
-Sentence: "The earth is flat."
-Model Score: 0.99
-Verdict: FALSE
-Explanation: Overwhelming scientific evidence contradicts this.
-Evidence:
-- Source: NASA
-  Description: Earth is an oblate spheroid.
-```
-
-![Demo Screenshot](https://github.com/AyushRawat1718/youtube-fact-checker/blob/main/Screenshot/Screenshot1718.png)
-
-
-## 🧩 Tech Stack
-
-```
-| Component             | Technology            |
-| --------------------- | --------------------- |
-| Transcript Extraction | yt-dlp                |
-| Sentence Splitting    | spaCy                 |
-| Claim Classification  | Custom RoBERTa model  |
-| Fact Checking         | LLaMA 3.1 8B (Ollama) |
-| Backend               | FastAPI               |
-| Frontend              | Streamlit             |
-| Report Generation     | HTML / PDF            |
-```
+---
 
 ## ✨ Credits
 
-- Built with passion by `Ayush Rawat` ✨
-  This project was inspired by modern misinformation-detection research and designed for clarity, usability, and real-world utility.
+Built with ❤️ by **Ayush Rawat**
 
-- If this tool helps you, consider giving the repo a ⭐ on GitHub!
+FactLens is an end-to-end AI engineering project exploring claim extraction, evidence retrieval, and LLM-powered fact verification for YouTube content.
+
+If you found this project useful or interesting, consider giving the repository a ⭐.
+
+---
 
 ## 🤝 Contributing
 
-Contributions are warmly welcomed!
-Whether it's improving accuracy, extending the UI, or optimizing the pipeline — your help makes this project better
+Contributions are welcome!
 
-1. Fork the repository
-2. Create a new branch (feature/new-feature)
-3. Commit your changes
-4. Open a pull request 🚀
+Whether it's improving the verification pipeline, enhancing the UI, optimizing the AI workflow, or fixing bugs, every contribution is appreciated.
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Commit your changes.
+4. Open a Pull Request 🚀.
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**. See the `LICENSE` file for details.
